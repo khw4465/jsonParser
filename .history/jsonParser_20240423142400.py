@@ -1,4 +1,4 @@
-from pyproj import Proj, Transformer, transform
+from pyproj import Proj, Transformer
 import pymysql
 import json
 import time
@@ -8,9 +8,15 @@ WGS84 = { 'proj':'latlong', 'datum':'WGS84', 'ellps':'WGS84', }
 GRS80 = { 'proj':'tmerc', 'lat_0':'38', 'lon_0':'127', 'k':1, 'x_0':200000,
     'y_0':600000, 'ellps':'GRS80', 'units':'m' }
 
+# def grs80_to_wgs84(x, y):
+#     transformer = Transformer.from_proj(GRS80, "EPSG:4326", always_xy=True)
+#     return transformer.transform(x, y)
+
 def grs80_to_wgs84(x, y):
-    transformer = Transformer.from_proj(GRS80, "EPSG:4326", always_xy=False)
-    return transformer.transform(x, y)
+    in_proj = Proj(init = 'epsg:5186')
+    out_proj = Proj(init = 'epsg:4326')
+    wgs84_x, wgs84_y = Transformer(in_proj, out_proj, x, y)
+    return wgs84_x, wgs84_y
 
 # secretes.json 파일에서 정보를 읽어옴
 with open('secretes.json') as f:
@@ -56,11 +62,14 @@ try:
 
                 if x and y:
                     wgs84_x, wgs84_y = grs80_to_wgs84(float(x), float(y))
-                    row.append((shopName, wgs84_x, wgs84_y))
+                    print(wgs84_x, wgs84_y)
 
-            sql = "INSERT INTO MyAround (shopName, x, y) VALUES (%s, %s, %s)"
-            cursor.executemany(sql, row)
-            print("insert완료")
+                    # row.append((shopName, wgs84_x, wgs84_y))
+
+
+            # sql = "INSERT INTO MyAround (shopName, x, y) VALUES (%s, %s, %s)"
+            # cursor.executemany(sql, row)
+            # print("insert완료")
 
     # 변경사항 커밋
     conn.commit()

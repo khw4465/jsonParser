@@ -1,4 +1,4 @@
-from pyproj import Proj, Transformer, transform
+from pyproj import Transformer
 import pymysql
 import json
 import time
@@ -9,7 +9,7 @@ GRS80 = { 'proj':'tmerc', 'lat_0':'38', 'lon_0':'127', 'k':1, 'x_0':200000,
     'y_0':600000, 'ellps':'GRS80', 'units':'m' }
 
 def grs80_to_wgs84(x, y):
-    transformer = Transformer.from_proj(GRS80, "EPSG:4326", always_xy=False)
+    transformer = Transformer.from_proj(GRS80, "EPSG:4326", always_xy=True)
     return transformer.transform(x, y)
 
 # secretes.json 파일에서 정보를 읽어옴

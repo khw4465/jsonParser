@@ -9,7 +9,7 @@ GRS80 = { 'proj':'tmerc', 'lat_0':'38', 'lon_0':'127', 'k':1, 'x_0':200000,
     'y_0':600000, 'ellps':'GRS80', 'units':'m' }
 
 def grs80_to_wgs84(x, y):
-    transformer = Transformer.from_proj(GRS80, "EPSG:4326", always_xy=False)
+    transformer = Transformer.from_proj(GRS80, "EPSG:4326", always_xy=True)
     return transformer.transform(x, y)
 
 # secretes.json 파일에서 정보를 읽어옴
@@ -58,9 +58,12 @@ try:
                     wgs84_x, wgs84_y = grs80_to_wgs84(float(x), float(y))
                     row.append((shopName, wgs84_x, wgs84_y))
 
-            sql = "INSERT INTO MyAround (shopName, x, y) VALUES (%s, %s, %s)"
-            cursor.executemany(sql, row)
-            print("insert완료")
+
+            # sql = "INSERT INTO MyAround (shopName, x, y) VALUES (%s, %s, %s)"
+            # cursor.executemany(sql, row)
+            # print("insert완료")
+
+            print(row)
 
     # 변경사항 커밋
     conn.commit()

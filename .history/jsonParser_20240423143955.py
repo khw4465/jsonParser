@@ -60,7 +60,7 @@ try:
 
             sql = "INSERT INTO MyAround (shopName, x, y) VALUES (%s, %s, %s)"
             cursor.executemany(sql, row)
-            print("insert완료")
+            print(i+"insert완료")
 
     # 변경사항 커밋
     conn.commit()

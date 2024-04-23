@@ -58,9 +58,12 @@ try:
                     wgs84_x, wgs84_y = grs80_to_wgs84(float(x), float(y))
                     row.append((shopName, wgs84_x, wgs84_y))
 
-            sql = "INSERT INTO MyAround (shopName, x, y) VALUES (%s, %s, %s)"
-            cursor.executemany(sql, row)
-            print("insert완료")
+
+            # sql = "INSERT INTO MyAround (shopName, x, y) VALUES (%s, %s, %s)"
+            # cursor.executemany(sql, row)
+            # print("insert완료")
+
+            print(row)
 
     # 변경사항 커밋
     conn.commit()

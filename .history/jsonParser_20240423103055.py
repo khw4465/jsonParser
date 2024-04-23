@@ -1,4 +1,4 @@
-from pyproj import Proj, Transformer, transform
+from pyproj import Transformer
 import pymysql
 import json
 import time
@@ -9,7 +9,7 @@ GRS80 = { 'proj':'tmerc', 'lat_0':'38', 'lon_0':'127', 'k':1, 'x_0':200000,
     'y_0':600000, 'ellps':'GRS80', 'units':'m' }
 
 def grs80_to_wgs84(x, y):
-    transformer = Transformer.from_proj(GRS80, "EPSG:4326", always_xy=False)
+    transformer = Transformer.from_proj(GRS80, "EPSG:4326", always_xy=True)
     return transformer.transform(x, y)
 
 # secretes.json 파일에서 정보를 읽어옴
@@ -38,29 +38,25 @@ try:
     with open('/Users/khw4465/openapi.json', encoding='utf-8') as f:
         json_data = json.load(f)
 
-        batch_size = 1000
-        total_rows = len(json_data['DATA'])
-        batch_count = (total_rows + batch_size -1) // batch_size
+        for data in json_data['DATA']:
+            shopName = data.get('bplcnm', '')
+            if not shopName:
+                print("매장 이름이 없는 데이터를 스킵합니다.")
+                continue
+        
+            x = data.get('x', '')
+            y = data.get('y', '')
 
-        for i in range(batch_count):
-            start_idx = i * batch_size
-            end_idx = min((i + 1) * batch_size, total_rows)
+            if x and y:
+                wgs84_x, wgs84_y = grs80_to_wgs84(float(x), float(y))
+                x = wgs84_x
+                y = wgs84_y
 
-            batch_data = json_data['DATA'][start_idx:end_idx]
-
-            row = []
-            for data in batch_data:
-                shopName = data.get('bplcnm', '')
-                x = data.get('x', '')
-                y = data.get('y', '')
-
-                if x and y:
-                    wgs84_x, wgs84_y = grs80_to_wgs84(float(x), float(y))
-                    row.append((shopName, wgs84_x, wgs84_y))
-
-            sql = "INSERT INTO MyAround (shopName, x, y) VALUES (%s, %s, %s)"
-            cursor.executemany(sql, row)
-            print("insert완료")
+                sql = "INSERT INTO MyAround (shopName, x, y) VALUES (%s, %s, %s)"
+                cursor.execute(sql, (shopName, x, y))
+            
+            else:
+                print("x 또는 y 값이 비어있으므로 건너뜁니다.")
 
     # 변경사항 커밋
     conn.commit()
